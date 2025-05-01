@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Eksperiments</title>
+    <script src="https://unpkg.com/jspsych@8.2.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-image-button-response@1.2.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.1.0"></script>
+    <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body></body>
+  <script>
+
+    const FREQUENCIES = [150, 250, 350, 450, 550, 650, 750, 850, 950, 1050];
+    const SIZES = ['xs', 's', 'm', 'l', 'xl', 'xxl'];
+    const SIZE_MAP = {'xs': 80, 's': 120, 'm': 160, 'l': 200, 'xl': 250, 'xxl': 300};
+    const COLOURS = ['img/000000ff.png'
+                    ,'img/00ff00ff.png'
+                    ,'img/0000ffff.png'
+                    ,'img/00ffffff.png'
+                    ,'img/ff0000ff.png'
+                    ,'img/ff00ffff.png'
+                    ,'img/ffffffff.png'];
+    const IMAGES = ['img/000000ff.png'
+                    ,'img/00ff00ff.png'
+                    ,'img/0000ffff.png'
+                    ,'img/00ffffff.png'
+                    ,'img/ff0000ff.png'
+                    ,'img/ff00ffff.png'
+                    ,'img/ffffffff.png'];
+    const TEST_SIZE = 12;
+
+    function playTone(frequency, duration = 500) {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioCtx.close();
+      }, duration);
+    }
+
+
+    var jsPsych = initJsPsych({
+      on_finish: function() {
+        jsPsych.data.displayData();
+      }
+    });
+    
+    var timeline = [];
+    timeline.push({
+      type: jsPsychSurveyHtmlForm,
+      html: '<p>Lūdzu ievadiet savu ID:</p><input name="participantID" type="text">',
+      on_finish: function(data){
+        jsPsych.data.addProperties({participant_id: data.participantID});
+      }
+    });
+
+
+    function createTrial(testType, trialNum) {
+      const frequency = FREQUENCIES[Math.floor(Math.random() * FREQUENCIES.length)];
+      let choices = [];
+
+      if (testType === 'shape') {
+        choices = jsPsych.randomization.sampleWithoutReplacement(IMAGES, 2);
+        return {
+          type: jsPsychImageButtonResponse,
+          stimulus: '',
+          choices: choices,
+          button_html: choices.map(img => `<img src="${img}" width="200" class="jspsych-btn">`),
+          on_start: function() {
+            playTone(frequency);
+          },
+          data: {
+            test: testType,
+            trial: trialNum,
+            frequency: frequency
+          },
+          on_finish: function(data) {
+            data.rt = Math.round(data.rt);
+            data.clicked = data.response;
+          }
+        };
+      }
+
+      let htmlStim = '';
+      if (testType === 'colour') {
+        const items = jsPsych.randomization.sampleWithoutReplacement(COLOURS, 2);
+        htmlStim = `
+          <div style="display:flex; justify-content:space-around;">
+            <div style="width:150px; height:150px; background:${items[0]};"></div>
+            <div style="width:150px; height:150px; background:${items[1]};"></div>
+          </div>`;
+        choices = items;
+      } else if (testType === 'size') {
+        const items = jsPsych.randomization.sampleWithoutReplacement(SIZES, 2);
+        htmlStim = `
+          <div style="display:flex; justify-content:space-around; align-items:center;">
+            <div style="width:${SIZE_MAP[items[0]]}px; height:${SIZE_MAP[items[0]]}px; background:white;"></div>
+            <div style="width:${SIZE_MAP[items[1]]}px; height:${SIZE_MAP[items[1]]}px; background:white;"></div>
+          </div>`;
+        choices = items;
+      }
+
+      return {
+        type: jsPsychImageButtonResponse,
+        stimulus: htmlStim,
+        choices: choices,
+        button_html: choices.map(() => '<button class="jspsych-btn">%choice%</button>'),
+        on_start: function() {
+          playTone(frequency);
+        },
+        data: {
+          test: testType,
+          trial: trialNum,
+          frequency: frequency
+        },
+        on_finish: function(data) {
+          data.rt = Math.round(data.rt);
+          data.clicked = data.response;
+        }
+      };
+    }
+
+    let testTypes = [];
+    for (let i = 0; i < TEST_SIZE; i++) {
+      testTypes.push(i % 3 === 0 ? 'shape' : i % 3 === 1 ? 'colour' : 'size');
+    }
+    testTypes = testTypes.sort(() => Math.random() - 0.5);
+
+    testTypes.forEach((type, i) => {
+      timeline.push(createTrial(type, i + 1));
+    });
+
+    // timeline.push({
+    //   type: jsPsychCallFunction,
+    //   func: function() {
+    //     const csv = jsPsych.data.get().csv();
+    //     const participant_id = jsPsych.data.get().last(1).values()[0].participant_id;
+    //     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    //     const filename = `test-${participant_id}_${timestamp}.csv`;
+
+    //     fetch('https://pipe.jspsych.org/api/data', {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json'
+    //       },
+    //       body: JSON.stringify({
+    //         experimentID: 'BDZLBcqP78dv',
+    //         filename: filename,
+    //         data: csv
+    //       })
+    //     }).then(response => {
+    //       if (!response.ok) {
+    //         console.error("Datu nosūtīšanas kļūda:", response.statusText);
+    //       }
+    //     });
+    //   }
+    // });
+
+    jsPsych.run(timeline);
+
+  </script>
+</html>
