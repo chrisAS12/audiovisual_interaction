@@ -1,3 +1,119 @@
 body {
     background-color: gray;
+}
+
+div {
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center;
+}
+
+.colour-block {
+    width: 150px;
+    height: 150px;
+    display: inline-block;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin: 10px;
+    background-size: cover;
+    background-position: center;
+}
+
+.shape-block {
+    background: white;
+    display: inline-block;
+    margin: 10px;
+    background: none !important;
+    background-color: transparent !important;
+}
+
+.size-block {
+    background: white;
+    display: inline-block;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    margin: 10px;
+    background-size: cover;
+    background-position: center;
+}
+
+    .size-sss {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .size-ss {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .size-s {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .size-m {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .size-l {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .size-xl {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .size-xxl {
+    width: 240px;
+    height: 240px;
+  }
+  
+  .size-xxxl {
+    width: 280px;
+    height: 280px;
+  }
+  
+  .size-xxxxl {
+    width: 320px;
+    height: 320px;
+  }
+  
+  .colour-black {
+    background-color: #000000;
+  }
+  
+  .colour-green {
+    background-color: #00ff00;
+  }
+  
+  .colour-blue {
+    background-color: #0000ff;
+  }
+  
+  .colour-cyan {
+    background-color: #00ffff;
+  }
+  
+  .colour-red {
+    background-color: #ff0000;
+  }
+  
+  .colour-magenta {
+    background-color: #ff00ff;
+  }
+  
+  .colour-white {
+    background-color: #ffffff;
+  }
+  
+  .colour-orange {
+    background-color: #ffa500;
+  }
+  
+  .colour-purple {
+    background-color: #800080;
   }
