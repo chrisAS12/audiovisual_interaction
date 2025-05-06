@@ -18,10 +18,20 @@
     </head>
     <body></body>
     <script>
-    const SEND_RESULTS = true; // vai sūtam uz datapipe serveri
-    const FREQUENCIES = [150, 250, 350, 450, 550, 650, 750, 850, 950];
+    const SEND_RESULTS = false; // vai sūtam uz datapipe serveri
+    const FREQUENCIES = [100, 500, 1000, 5000, 9000];
     const SIZES = ['sss','ss','s','m','l','xl','xxl','xxxl','xxxxl'];
-    const COLOURS = ['black','green','blue','cyan','red','magenta','white','orange','purple'];
+    const COLOURS = [
+      'red-saturated', 'red-light', 'red-muted', 'red-dark',
+      'orange-saturated', 'orange-light', 'orange-muted', 'orange-dark',
+      'yellow-saturated', 'yellow-light', 'yellow-muted', 'yellow-dark',
+      'chartreuse-saturated', 'chartreuse-light', 'chartreuse-muted', 'chartreuse-dark',
+      'green-saturated', 'green-light', 'green-muted', 'green-dark',
+      'cyan-saturated', 'cyan-light', 'cyan-muted', 'cyan-dark',
+      'blue-saturated', 'blue-light', 'blue-muted', 'blue-dark',
+      'purple-saturated', 'purple-light', 'purple-muted', 'purple-dark',
+      'black', 'gray-dark', 'gray-medium', 'gray-light', 'white'
+    ];
     const BOUBA_IMAGES = [
       'img/blob (1).svg','img/blob (2).svg','img/blob (3).svg',
       'img/blob (4).svg','img/blob (5).svg','img/blob (6).svg',
@@ -34,7 +44,7 @@
       'img/Kiki7.png','img/Kiki8.png','img/Kiki9.png',
       'img/Kiki10.png'
     ];
-    const TEST_SIZE = 15; // Cik testus katram piemēram
+    const TEST_SIZE = 25; // Cik testus katram piemēram
 
     function playTone(frequency, duration = 500) {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -150,7 +160,7 @@
           }
         }),
         trial_duration: 3000,
-        post_trial_gap: 3000,
+        post_trial_gap: 2000,
         on_start: function() {
           playTone(frequency);
         },
