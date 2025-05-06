@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Eksperiments</title>
-        <script src="https://unpkg.com/jspsych@8.2.1"></script>
-        <script
-            src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
-        <script
-            src="https://unpkg.com/@jspsych/plugin-image-button-response@1.2.0"></script>
-        <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
-        <script
-            src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0"></script>
-        <script
-            src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.1.0"></script>
-        <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css"
-            rel="stylesheet" type="text/css" />
-        <link href="style.css" rel="stylesheet" type="text/css" />
-    </head>
-    <body></body>
-    <script>
-    const SEND_RESULTS = false; // vai sūtam uz datapipe serveri
+  <head>
+    <title>Eksperiments</title>
+    <script src="https://unpkg.com/jspsych@8.2.1"></script>
+    <script
+      src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+    <script
+      src="https://unpkg.com/@jspsych/plugin-image-button-response@1.2.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
+    <script
+      src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0"></script>
+    <script
+      src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.1.0"></script>
+    <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css"
+      rel="stylesheet" type="text/css" />
+
+
+      <script src="https://unpkg.com/@jspsych/plugin-survey@2.1.0"></script>
+      <link rel="stylesheet" href="https://unpkg.com/@jspsych/plugin-survey@1.0.1/css/survey.css">
+
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body></body>
+  <script>
+    const SEND_RESULTS = true; // vai sūtam uz datapipe serveri
     const FREQUENCIES = [100, 500, 1000, 5000, 9000];
     const SIZES = ['sss','ss','s','m','l','xl','xxl','xxxl','xxxxl'];
     const COLOURS = [
@@ -44,7 +50,7 @@
       'img/Kiki7.png','img/Kiki8.png','img/Kiki9.png',
       'img/Kiki10.png'
     ];
-    const TEST_SIZE = 25; // Cik testus katram piemēram
+    const TEST_SIZE = 1; // Cik testus katram piemēram
 
     function playTone(frequency, duration = 500) {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -105,7 +111,7 @@
     var timeline = [];
     timeline.push({
       type: jsPsychSurveyHtmlForm,
-      html: '<p>Lūdzu ievadiet savu ID:</p><input name="participantID" type="text">',
+      html: '<p>Šis eksperiments ir paredzēts, lai noskaidrotu, vai dažādu frekvenču skaņas ietekmē cilvēku izvēles. Eksperiments aizņems aptuveni 6 minūtes un sastāv no 75 izvēlēm. Visi iegūtie dati būs anonīmi un tiks izmantoti tikai bakalaura darba ietvaros analītiskiem nolūkiem.</p><p>Izvēli veiciet izmantojot bultiņas (arrow keys), tas ir ← - objekts pa kreisi un → - objekts pa labi. </p><p>Lūdzu ievadiet savu pirmo vārdu vai segvārdu:</p><input name="participantID" type="text">',
       on_finish: function(data){
         jsPsych.data.addProperties({participant_id: data.response.participantID});
       }
@@ -145,23 +151,31 @@
       const frequency = FREQUENCIES[Math.floor(Math.random() * FREQUENCIES.length)];
       const [left, right] = jsPsych.randomization.shuffle(test.items);
 
+      let stimulusHTML = '';
+      if (test.type === 'colour') {
+        stimulusHTML = `<div style="display: flex; justify-content: space-around;">
+                          <div class="colour-block colour-${left}"></div>
+                          <div class="colour-block colour-${right}"></div>
+                        </div>`;
+      } else if (test.type === 'size') {
+        stimulusHTML = `<div style="display: flex; justify-content: space-around;">
+                          <div class="size-block size-${left}"></div>
+                          <div class="size-block size-${right}"></div>
+                        </div>`;
+      } else {
+        stimulusHTML = `<div style="display: flex; justify-content: space-around;">
+                          <img src="${left}" class="shape-block" />
+                          <img src="${right}" class="shape-block" />
+                        </div>`;
+      }
+
       timeline.push({
-        type: jsPsychImageButtonResponse,
-        stimulus: '',
-        choices: [left, right],
-        button_html: [left, right].map(item => {
-          if (test.type === 'colour') {
-            return `<div class="colour-block colour-${item}"></div>`;
-          } else if (test.type === 'size') {
-            return `<div class="size-block size-${item}"></div>`;
-          } else {
-            return `<img src="${item}" class="shape-block">`;
-            
-          }
-        }),
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: stimulusHTML,
+        choices: ['ArrowLeft', 'ArrowRight'],
         trial_duration: 3000,
         post_trial_gap: 2000,
-        on_start: function() {
+        on_start: function () {
           playTone(frequency);
         },
         data: {
@@ -171,19 +185,81 @@
           left_item: left,
           right_item: right
         },
-        on_finish: function(data) {
-          data.rt = Math.round(data.rt);
-          data.clicked_item = data.response === 0 ? data.left_item : data.right_item;
-          data.clicked_position = data.response === 0 ? 'left' : 'right';
-          delete data.stimulus;
-          delete data.response;
-          delete data.trial_type;
-          delete data.trial_index;
-          delete data.plugin_version;
-          delete data.time_elapsed;
+        on_finish: function (data) {
+          data.clicked_item = data.response === 'ArrowLeft' ? data.left_item : data.right_item;
+          data.clicked_position = data.response === 'ArrowLeft' ? 'left' : 'right';
         }
       });
     });
+
+    timeline.push({
+  type: jsPsychSurvey,
+  survey_json: {
+    showQuestionNumbers: false,
+    title: 'Noslēguma aptauja',
+    pages: [
+      {
+        elements: [
+          {
+            type: 'text',
+            name: 'age',
+            title: 'Kāds ir Jūsu vecums?',
+            inputType: 'number',
+            isRequired: true
+          }
+        ]
+      },
+      {
+        elements: [
+          {
+            type: 'radiogroup',
+            name: 'gender',
+            title: 'Kāds ir Jūsu dzimums?',
+            choices: ['Vīrietis', 'Sieviete', 'Cits', 'Nevēlos atbildēt'],
+            isRequired: true
+          }
+        ]
+      },
+      {
+        elements: [
+          {
+            type: 'radiogroup',
+            name: 'education',
+            title: 'Kāds ir Jūsu izglītības līmenis?',
+            choices: ['Pamatizglītība', 'Vidējā', 'Augstākā', 'Cits'],
+            isRequired: false
+          }
+        ]
+      },
+      {
+        elements: [
+          {
+            type: 'checkbox',
+            name: 'hobbies',
+            title: 'Kādi ir Jūsu hobiji? (Var izvēlēties vairākus)',
+            choices: ['Mūzika', 'Sports', 'Māksla', 'Lasīšana', 'Videospēles'],
+            showOtherItem: true,
+            isRequired: false
+          }
+        ]
+      },
+      {
+        elements: [
+          {
+            type: 'text',
+            name: 'comments',
+            title: 'Vai ir kādi komentāri vai ieteikumi par šo eksperimentu?',
+            isRequired: false
+          }
+        ]
+      }
+    ]
+  },
+  on_finish: function(data) {
+    jsPsych.data.addProperties({ demographics: data.response });
+  }
+});
+
 
     timeline.push({
       type: jsPsychHtmlKeyboardResponse,
