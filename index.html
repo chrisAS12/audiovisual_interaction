@@ -111,7 +111,7 @@
     var timeline = [];
     timeline.push({
       type: jsPsychSurveyHtmlForm,
-      html: '<p>Šis eksperiments ir paredzēts, lai noskaidrotu, vai dažādu frekvenču skaņas ietekmē cilvēku izvēles. Eksperiments aizņems aptuveni 6 minūtes un sastāv no 75 izvēlēm. Visi iegūtie dati būs anonīmi un tiks izmantoti tikai bakalaura darba ietvaros analītiskiem nolūkiem.</p><p>Izvēli veiciet izmantojot bultiņas (arrow keys), tas ir ← - objekts pa kreisi un → - objekts pa labi. </p><p>Lūdzu ievadiet savu pirmo vārdu vai segvārdu:</p><input name="participantID" type="text">',
+      html: '<p>Šis eksperiments ir paredzēts, lai noskaidrotu, vai dažādu frekvenču skaņas ietekmē cilvēku izvēles. Eksperiments aizņems aptuveni 6 minūtes un sastāv no 75 objektu izvēlēm. Visi iegūtie dati būs anonīmi un tiks izmantoti tikai bakalaura darba ietvaros analītiskiem nolūkiem.</p><p>Izvēli veiciet izmantojot bultiņas (arrow keys), tas ir ← - objekts pa kreisi un → - objekts pa labi. </p><p>Lūdzu ievadiet savu pirmo vārdu vai segvārdu:</p><input name="participantID" type="text">',
       on_finish: function(data){
         jsPsych.data.addProperties({participant_id: data.response.participantID});
       }

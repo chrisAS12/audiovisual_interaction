@@ -52,3 +52,29 @@ def xyY_to_hex(xyY):
 for name, xyY in bcp_xyY_colours.items():
     hex_code = xyY_to_hex(xyY)
     print(f".colour-{name} {{ background-color: {hex_code}; }}\n")
+
+# rēķinam krāsu koeficinetus pēc RGB vērtībām un brightness jeb luminance un noteiktā standarta
+
+
+def xyY_to_linear_rgb(xyY):
+    XYZ = colour.xyY_to_XYZ(xyY)
+    RGB = colour.XYZ_to_sRGB(XYZ)
+    return [max(0, min(1, c)) for c in RGB]
+
+def luminance(rgb):
+    r, g, b = rgb
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+luminance_dict = {}
+for name, xyY in bcp_xyY_colours.items():
+    rgb = xyY_to_linear_rgb(xyY)
+    y = luminance(rgb)
+    luminance_dict[name] = y
+
+sorted_items = sorted(luminance_dict.items(), key=lambda x: x[1])
+value_map_colour = {name: i + 1 for i, (name, _) in enumerate(sorted_items)}
+
+print("value_map_colour = {")
+for name, val in value_map_colour.items():
+    print(f"    '{name}': {val},")
+print("}")
