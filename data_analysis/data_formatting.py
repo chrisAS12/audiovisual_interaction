@@ -15,6 +15,7 @@ value_map_size = {
             'xxxxl': 9
         }
 
+# pēc brightness vērtībām, kas ir FFFFFF, šīs krāsas ir vienādas
 value_map_colour = {
     'black': 1,
     'green-saturated': 2,
@@ -55,6 +56,57 @@ value_map_colour = {
     'gray-light': 34,
     'white': 34,
 }
+
+#pēc bcp sadaļām
+
+value_map_colour_grouped = {
+    'black': 1,
+    'gray-dark': 1,
+    'gray-medium': 1,
+    'gray-light': 1,
+    'white': 1,
+
+    'green-saturated': 2,
+    'green-light': 2,
+    'green-muted': 2,
+    'green-dark': 2,
+
+    'cyan-saturated': 3,
+    'cyan-light': 3,
+    'cyan-muted': 3,
+    'cyan-dark': 3,
+
+    'red-saturated': 4,
+    'red-light': 4,
+    'red-muted': 4,
+    'red-dark': 4,
+
+    'orange-saturated': 5,
+    'orange-light': 5,
+    'orange-muted': 5,
+    'orange-dark': 5,
+
+    'yellow-saturated': 6,
+    'yellow-light': 6,
+    'yellow-muted': 6,
+    'yellow-dark': 6,
+
+    'chartreuse-saturated': 7,
+    'chartreuse-light': 7,
+    'chartreuse-muted': 7,
+    'chartreuse-dark': 7,
+
+    'blue-saturated': 8,
+    'blue-light': 8,
+    'blue-muted': 8,
+    'blue-dark': 8,
+
+    'purple-saturated': 9,
+    'purple-light': 9,
+    'purple-muted': 9,
+    'purple-dark': 9,
+}
+
 
 value_map_shape = {}
 
@@ -143,9 +195,9 @@ for folder in base_input_folders:
             df_type['clicked_item'] = df_type['clicked_item'].map(value_map_size)
 
         elif test_type == 'colour':
-            df_type['left_item'] = df_type['left_item'].map(value_map_colour)
-            df_type['right_item'] = df_type['right_item'].map(value_map_colour)
-            df_type['clicked_item'] = df_type['clicked_item'].map(value_map_colour)
+            df_type['left_item'] = df_type['left_item'].map(value_map_colour_grouped)
+            df_type['right_item'] = df_type['right_item'].map(value_map_colour_grouped)
+            df_type['clicked_item'] = df_type['clicked_item'].map(value_map_colour_grouped)
 
         elif test_type == 'shape':
             df_type['left_item'] = df_type['left_item'].map(value_map_shape)

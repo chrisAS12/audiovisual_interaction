@@ -32,12 +32,22 @@ for folder in combined_folders:
     df['choice_type'] = df.apply(classify_brightness, axis=1)
     df = df[df['choice_type'] != 'ignore']
 
+    print(df)
+
     summary = df.groupby(['frequency', 'choice_type']).size().unstack(fill_value=0)
+    print(summary)
+
     summary_percent = summary.div(summary.sum(axis=1), axis=0) * 100
+    print(summary_percent)
 
     fig, ax = plt.subplots(figsize=(10, 5))
     summary_percent.plot(kind='bar', stacked=True, ax=ax)
-    ax.set_title(f"Izvēļu procenti pēc frekvences — {folder.replace('_combined', '')}")
+    if folder == "individual_combined":
+            ax.set_title(f"Izvēles procenti (%) krāsai pēc frekvences (Hz) abu grupu dalībniekiem")
+    elif folder == "lab_tests_combined":
+            ax.set_title(f"Izvēles procenti (%) krāsai pēc frekvences (Hz) kontrolētās grupas dalībniekiem")
+    elif folder == "online_tests_combined":
+        ax.set_title(f"Izvēles procenti (%) krāsai pēc frekvences (Hz) nekontrolētās grupas dalībniekiem")
     ax.set_xlabel("Frekvence (Hz)")
     ax.set_ylabel("Procenti (%)")
     ax.legend(title="Izvēle")
@@ -49,25 +59,35 @@ for folder in combined_folders:
             lambda x: 'brighter' if (x == 'brighter').mean() >= 0.5 else 'darker'
         )
 
+        print("overall_direction")
+        print(overall_direction)
+
         results = []
         for pid, group in df.groupby('participant_id'):
             individual_direction = group.groupby('frequency')['choice_type'].apply(
                 lambda x: 'brighter' if (x == 'brighter').mean() >= 0.5 else 'darker'
             )
+
+            print(f"dalībnieks {pid}")
+            print(individual_direction)
+
             match_freqs = (individual_direction == overall_direction[individual_direction.index])
             percent_match = match_freqs.mean() * 100
             results.append((pid, percent_match))
 
+        print("\n iondividuāli rezultāti")
         for pid, percent in results:
             status = "SAKRĪT" if percent == 100 else f"{percent:.0f}% sakrīt"
             print(f"{pid:20s}: {status}")
 
         match_df = pd.DataFrame(results, columns=["participant_id", "percent_match"])
+        print("\n match_df")
+        print(match_df)
+
         fig, ax = plt.subplots(figsize=(10, 6))
         match_df['percent_match'].plot(kind='hist', bins=10, edgecolor='black', ax=ax)
-        ax.set_title("Dalībnieku atbilstība kopējai tendencei (%) — krāsu tests")
+        ax.set_title("Dalībnieku atbilstība kopējai tendencei (%)")
         ax.set_xlabel("Sakrīt ar kopējo virzienu (%)")
         ax.set_ylabel("Dalībnieku skaits")
         plt.tight_layout()
         plt.show()
- 

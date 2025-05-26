@@ -37,41 +37,84 @@ for folder in combined_folders:
 
     df = pd.read_csv(path)
     df['choice_type'] = df.apply(classify_choice, axis=1)
+    total_tests = len(df)
+
     summary = df.groupby(['frequency', 'choice_type']).size().unstack(fill_value=0)
     summary_percent = summary.div(summary.sum(axis=1), axis=0) * 100
+    print(summary_percent)
 
     fig, ax = plt.subplots(figsize=(10, 6))
     summary_percent.plot(kind='bar', stacked=True, ax=ax)
-    ax.set_title(f"Izvēļu sadalījums (%) pēc frekvences — {folder.replace('_combined', '')}")
+    if folder == "individual_combined":
+        ax.set_title(f"Izvēles procenti (%) lielumam pēc frekvences (Hz) abu grupu dalībniekiem")
+    elif folder == "lab_tests_combined":
+        ax.set_title(f"Izvēles procenti (%) lielumam pēc frekvences (Hz) kontrolētās grupas dalībniekiem")
+    elif folder == "online_tests_combined":
+        ax.set_title(f"Izvēles procenti lielumam (%) pēc frekvences (Hz) nekontrolētās grupas dalībniekiem")
     ax.set_xlabel("Frekvence (Hz)")
     ax.set_ylabel("Procenti (%)")
     ax.legend(title="Izvēle")
     plt.tight_layout()
     plt.show()
 
-    if folder == "individual_combined":
-        overall_direction = df.groupby('frequency')['choice_type'].apply(
-            lambda x: 'larger' if (x == 'larger').mean() >= 0.5 else 'smaller'
-        )
+    print(f"\n dzimumi un frekvences - {folder}")
+    for gender, group in df.groupby("gender"):
+        gender_tests = len(group)
+        gender_pct = gender_tests / total_tests * 100
+        choices = group['choice_type']
+        larger_pct = (choices == "larger").mean() * 100
+        smaller_pct = (choices == "smaller").mean() * 100
+        moda = choices.mode().iloc[0] if not choices.mode().empty else 'nav'
 
-        results = []
-        for pid, group in df.groupby('participant_id'):
-            individual_direction = group.groupby('frequency')['choice_type'].apply(
-                lambda x: 'larger' if (x == 'larger').mean() >= 0.5 else 'smaller'
-            )
-            match_freqs = (individual_direction == overall_direction[individual_direction.index])
-            percent_match = match_freqs.mean() * 100
-            results.append((pid, percent_match))
-            
-        for pid, percent in results:
-            status = "SAKRĪT" if percent == 100 else f"{percent:.0f}% sakrīt"
-            print(f"{pid:20s}: {status}")
+        print(f"\n dzimums: {gender} ({gender_tests} testi, {gender_pct:.1f}%)")
+        print(f"larger: {larger_pct:.1f}%")
+        print(f"smaller: {smaller_pct:.1f}%")
+        print(f"moda: {moda}")
+        print(f"testi frekvencēs:")
+        freq_counts = group['frequency'].value_counts().sort_index()
+        for freq, count in freq_counts.items():
+            freq_pct = count / gender_tests * 100
+            print(f"{freq} Hz: {count} testi ({freq_pct:.1f}%)")
 
-        match_df = pd.DataFrame(results, columns=["participant_id", "percent_match"])
-        fig, ax = plt.subplots(figsize=(10, 6))
-        match_df['percent_match'].plot(kind='hist', bins=10, edgecolor='black', ax=ax)
-        ax.set_title("Dalībnieku atbilstība kopējai tendencei (%)")
-        ax.set_xlabel("Sakrīt ar kopējo virzienu (%)")
-        ax.set_ylabel("Dalībnieku skaits")
-        plt.tight_layout()
-        plt.show()
+    print(f"\n hobiji un frekvences - {folder}")
+    df['hobbies'] = df['hobbies'].apply(lambda x: eval(x) if isinstance(x, str) else [])
+    all_hobbies = sorted(set(hobby for sublist in df['hobbies'] for hobby in sublist))
+    for hobby in all_hobbies:
+        group = df[df['hobbies'].apply(lambda x: hobby in x)]
+        hobby_tests = len(group)
+        hobby_pct = hobby_tests / total_tests * 100
+        choices = group['choice_type']
+        larger_pct = (choices == "larger").mean() * 100
+        smaller_pct = (choices == "smaller").mean() * 100
+        moda = choices.mode().iloc[0] if not choices.mode().empty else 'nav'
+
+        print(f"\n hobijs: {hobby} ({hobby_tests} testi, {hobby_pct:.1f}%)")
+        print(f"larger: {larger_pct:.1f}%")
+        print(f"smaller: {smaller_pct:.1f}%")
+        print(f"moda: {moda}")
+        print(f"testi frekvencēs:")
+        freq_counts = group['frequency'].value_counts().sort_index()
+        for freq, count in freq_counts.items():
+            freq_pct = count / hobby_tests * 100
+            print(f"{freq} Hz: {count} testi ({freq_pct:.1f}%)")
+
+    print(f"\n vecuma grupas un frekvences - {folder}")
+    df['age_group'] = pd.cut(df['age'], bins=[0, 20, 30, 100], labels=['<21', '21-30', '30+'])
+    for group_name, group in df.groupby("age_group"):
+        group_tests = len(group)
+        group_pct = group_tests / total_tests * 100
+        choices = group['choice_type']
+        larger_pct = (choices == "larger").mean() * 100
+        smaller_pct = (choices == "smaller").mean() * 100
+        moda = choices.mode().iloc[0] if not choices.mode().empty else 'nav'
+
+        print(f"\n vecuma grupa: {group_name} ({group_tests} testi, {group_pct:.1f}%)")
+        print(f"larger: {larger_pct:.1f}%")
+        print(f"smaller: {smaller_pct:.1f}%")
+        print(f"moda: {moda}")
+        print(f"testi frekvencēs:")
+        freq_counts = group['frequency'].value_counts().sort_index()
+        for freq, count in freq_counts.items():
+            freq_pct = count / group_tests * 100
+            print(f"{freq} Hz: {count} testi ({freq_pct:.1f}%)")
+
